@@ -1,18 +1,14 @@
 package com.example.bluetoothchat.presentation.ChatScreen
 
-import android.content.res.Resources.Theme
-import androidx.annotation.ColorRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -20,23 +16,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.R
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.bluetoothchat.domain.BluetoothMessage
-import com.example.bluetoothchat.presentation.BluetoothUiState
+import com.example.bluetoothchat.domain.model.Message
+import com.example.bluetoothchat.domain.model.User
+import kotlinx.coroutines.flow.StateFlow
+import kotlin.reflect.KFunction2
 
 @Composable
 fun ChatScreen(
-  //  state: BluetoothUiState,
-    onDisconnect: () -> Unit = {},
-    onSendMessage: (String) -> Unit = {}
+    messages:List<Message>,
+    onDisconnect: StateFlow<User> ,
+    onSendMessage: KFunction2<Message, Int, Unit>
 ) {
-    val message = rememberSaveable {
+    val tmpMessage = rememberSaveable {
         mutableStateOf("")
     }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -46,38 +43,19 @@ fun ChatScreen(
             .fillMaxSize()
             .background(Color.DarkGray)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "Messages",
-                modifier = Modifier.weight(1f)
-            )
-            IconButton(onClick = onDisconnect) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Disconnect"
-                )
-            }
-        }
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+                .fillMaxWidth(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            items(10) { message ->
+            items(messages) { message ->
                 Column(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     ChatMessage(
-                        message = BluetoothMessage("text","who",false),
-                        modifier = Modifier
-                            .align(Alignment.Start)
+                        message = Message(message.text,"who", message.isFromLocalUser)
+                        , modifier = Modifier.align(if(message.isFromLocalUser) Alignment.Start else Alignment.End )
                     )
                 }
             }
@@ -89,16 +67,16 @@ fun ChatScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
-                value = message.value,
-                onValueChange = { message.value = it },
+                value = tmpMessage.value,
+                onValueChange = { tmpMessage.value = it },
                 modifier = Modifier.weight(1f),
                 placeholder = {
                     Text(text = "Message")
                 }
             )
             IconButton(onClick = {
-                onSendMessage(message.value)
-                message.value = ""
+                onSendMessage(Message(tmpMessage.value,"time",true),1)
+                tmpMessage.value = ""
                 keyboardController?.hide()
             }) {
                 Icon(
@@ -111,7 +89,7 @@ fun ChatScreen(
 }
 @Composable
 fun ChatMessage(
-    message: BluetoothMessage,
+    message: Message,
     modifier: Modifier = Modifier
 ) {
     val color = colorResource(id = com.example.bluetoothchat.R.color.dark_blue)
@@ -126,17 +104,18 @@ fun ChatMessage(
                 )
             )
             .background(
-                if (!message.isFromLocalUser) color else color
+                if (!message.isFromLocalUser) color else Color.Gray
             )
-            .padding(16.dp)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.End
     ) {
         Text(
-            text = message.senderName,
+            text = message.time,
             fontSize = 10.sp,
             color = Color.White
         )
         Text(
-            text = message.message,
+            text = message.text,
             color = Color.White,
             modifier = Modifier.widthIn(max = 250.dp)
         )

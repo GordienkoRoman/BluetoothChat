@@ -1,7 +1,7 @@
 package com.example.bluetoothchat.data.bluetooth
 
 import android.bluetooth.BluetoothSocket
-import com.example.bluetoothchat.domain.BluetoothMessage
+import com.example.bluetoothchat.domain.model.Message
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -15,7 +15,7 @@ import java.io.ObjectInputStream
 class BluetoothDataTransferService(
     private val socket: BluetoothSocket
 ) {
-    fun listenForIncomingMessages(): Flow<BluetoothMessage> {
+    fun listenForIncomingMessages(): Flow<Message> {
         return flow {
             if(!socket.isConnected) {
                 return@flow
@@ -32,7 +32,7 @@ class BluetoothDataTransferService(
                 val m = ObjectInputStream(byteIn)
                 val data2 = m.readObject() as Map<Int, String>
                 emit(
-                   BluetoothMessage(data2[1].toString(),data2[2].toString(),false)
+                   Message(data2[1].toString(),data2[2].toString(),false)
                 )
             }
         }.flowOn(Dispatchers.IO)

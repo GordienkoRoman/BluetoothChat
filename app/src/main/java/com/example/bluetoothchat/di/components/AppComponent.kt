@@ -3,6 +3,7 @@ package com.example.bluetoothchat.di.components
 import android.content.Context
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.example.bluetoothchat.di.modules.AppModule
+import com.example.bluetoothchat.di.modules.DatabaseModule
 import com.example.bluetoothchat.di.modules.ViewModelModule
 import com.example.bluetoothchat.presentation.MainActivity
 import dagger.BindsInstance
@@ -14,7 +15,9 @@ annotation class AppScope
 
 @AppScope
 @Component(
-    modules = [AppModule::class,ViewModelModule::class]
+    modules = [AppModule::class,
+        ViewModelModule::class,
+        DatabaseModule::class]
 )
 interface AppComponent {
     @OptIn(ExperimentalMaterial3Api::class)

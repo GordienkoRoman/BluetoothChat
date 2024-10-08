@@ -2,121 +2,62 @@ package com.example.bluetoothchat.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.bluetoothchat.domain.BluetoothController
-import com.example.bluetoothchat.domain.BluetoothDevice
-import com.example.bluetoothchat.domain.BluetoothDeviceDomain
-import com.example.bluetoothchat.domain.ConnectionResult
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
+import com.example.bluetoothchat.data.local.RoomRepository
+import com.example.bluetoothchat.domain.model.Message
+import com.example.bluetoothchat.domain.model.User
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class BluetoothViewModel @Inject constructor(
-    private val bluetoothController: BluetoothController
+    private val roomRepository: RoomRepository
 ) : ViewModel() {
 
-    private var deviceConnectionJob: Job? = null
-    private val _state = MutableStateFlow(BluetoothUiState())
-    val state
-        get() = combine(
-            bluetoothController.scannedDevices,
-            bluetoothController.pairedDevices,
-            _state
-        ) { scannedDevices, pairedDevices, state ->
-            state.copy(scannedDevices = scannedDevices,
-                pairedDevices = pairedDevices,
-                messages = if(state.isConnected) state.messages else emptyList())
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000),_state.value)
+    private val _messagesList = MutableStateFlow(listOf(Message("", "", true)))
+    val messagesList
+        get() = _messagesList.asStateFlow()
+    private val _usersList = MutableStateFlow(listOf(User(0, "", "")))
+    val usersList
+        get() = _usersList.asStateFlow()
+    private val loadingMutableStateFlow = MutableStateFlow(true)
+    val loadingFlow
+        get() = loadingMutableStateFlow.asStateFlow()
 
-    init {
-        bluetoothController.isConnected.onEach { isConnected->
-            _state.update { it.copy(isConnected = isConnected) }
-        }.launchIn(viewModelScope)
-    }
-    fun startScan(){
-        bluetoothController.startDiscovery()
-    }
-    fun stopScan(){
-        bluetoothController.stopDiscovery()
-    }
-
-    fun connectToDevice(device: BluetoothDeviceDomain) {
-        _state.update { it.copy(isConnecting = true) }
-        deviceConnectionJob = bluetoothController
-            .connectToDevice(device)
-            .listen()
-    }
-    fun sendMessage(message: String) {
+    fun saveUser(id: Int) {
         viewModelScope.launch {
-            val bluetoothMessage = bluetoothController.trySendMessage(message)
-            if(bluetoothMessage != null) {
-                _state.update { it.copy(
-                    messages = it.messages + bluetoothMessage
-                ) }
-            }
+            roomRepository.saveUser(id)
         }
     }
 
-    fun disconnectFromDevice() {
-        deviceConnectionJob?.cancel()
-        bluetoothController.closeConnection()
-        _state.update { it.copy(
-            isConnecting = false,
-            isConnected = false
-        ) }
-    }
+//    fun getUsers(): List<User> {
+//        viewModelScope.launch {
+//            loadingMutableStateFlow.value = true
+//            runCatching {
+//                roomRepository.getUsers()
+//            }.onSuccess {
+//                _usersList.value = it
+//                it.forEach { user: User ->
+//                    roomRepository.getMessages(user.id)
+//                }
+//                loadingMutableStateFlow.value = false
+//            }.onFailure {
+//                loadingMutableStateFlow.value = false
+//            }
+//        }
+//    }
 
-    fun waitForIncomingConnections() {
-        _state.update { it.copy(isConnecting = true) }
-        deviceConnectionJob = bluetoothController
-            .startBluetoothServer()
-            .listen()
-    }
-
-    private fun Flow<ConnectionResult>.listen(): Job {
-        return onEach { result ->
-            when(result) {
-                ConnectionResult.ConnectionEstablished -> {
-                    _state.update { it.copy(
-                        isConnected = true,
-                        isConnecting = false,
-                    ) }
-                }
-                is ConnectionResult.Error -> {
-                    _state.update { it.copy(
-                        isConnected = false,
-                        isConnecting = false,
-                    ) }
-                }
-
-                is ConnectionResult.TransferSucceeded -> {
-                    _state.update { it.copy(
-                        messages = it.messages + result.message
-                    ) }
-                }
+    fun getMessages(userId: Int) {
+        viewModelScope.launch {
+            loadingMutableStateFlow.value = true
+            runCatching {
+                roomRepository.getMessages(userId)
+            }.onSuccess {
+                _messagesList.value = it
+                loadingMutableStateFlow.value = false
+            }.onFailure {
+                loadingMutableStateFlow.value = false
             }
         }
-            .catch { throwable ->
-                bluetoothController.closeConnection()
-                _state.update { it.copy(
-                    isConnected = false,
-                    isConnecting = false,
-                ) }
-            }
-            .launchIn(viewModelScope)
-    }
-
-    override fun onCleared() {
-        bluetoothController.release()
-        super.onCleared()
     }
 }

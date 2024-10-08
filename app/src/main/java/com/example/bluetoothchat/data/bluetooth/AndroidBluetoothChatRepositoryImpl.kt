@@ -8,9 +8,11 @@ import android.bluetooth.BluetoothServerSocket
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.IntentFilter
-import com.example.bluetoothchat.domain.BluetoothController
+import com.example.bluetoothchat.data.local.dao.MessageDao
+import com.example.bluetoothchat.data.local.dao.UsersDao
+import com.example.bluetoothchat.domain.BluetoothChatRepository
 import com.example.bluetoothchat.domain.BluetoothDeviceDomain
-import com.example.bluetoothchat.domain.BluetoothMessage
+import com.example.bluetoothchat.domain.model.Message
 import com.example.bluetoothchat.domain.ConnectionResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,13 +34,15 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.ObjectOutputStream
 import java.util.UUID
+import javax.inject.Inject
 
 
 @SuppressLint("MissingPermission")
-
-class AndroidBluetoothController(
-    private val context: Context
-) : BluetoothController {
+class AndroidBluetoothChatRepositoryImpl @Inject constructor(
+    private val context: Context,
+    private val usersDao: UsersDao,
+    private val messageDao: MessageDao
+) : BluetoothChatRepository {
 
     private val bluetoothManager by lazy {
         context.getSystemService(BluetoothManager::class.java)
@@ -120,7 +124,7 @@ class AndroidBluetoothController(
         bluetoothAdapter?.cancelDiscovery()
     }
 
-    override suspend fun trySendMessage(message: String): BluetoothMessage? {
+    override suspend fun trySendMessage(message: String): Message? {
         if (!hasPermission(Manifest.permission.BLUETOOTH_CONNECT)) {
             return null
         }
@@ -129,15 +133,15 @@ class AndroidBluetoothController(
             return null
         }
 
-        val bluetoothMessage = BluetoothMessage(
-            message = message,
-            senderName = bluetoothAdapter?.name ?: "Unknown name",
+        val bluetoothMessage = Message(
+            text = message,
+            time = bluetoothAdapter?.name ?: "Unknown name",
             isFromLocalUser = true
         )
 
         val data: MutableMap<Int, String> = HashMap()
-        data[1] = bluetoothMessage.message
-        data[2] = bluetoothMessage.senderName
+        data[1] = bluetoothMessage.text
+        data[2] = bluetoothMessage.time
         val byteOut = ByteArrayOutputStream()
         val out = ObjectOutputStream(byteOut)
         out.writeObject(data)
@@ -226,6 +230,8 @@ class AndroidBluetoothController(
         currentClientSocket = null
         currentServerSocket = null
     }
+
+
 
     override fun release() {
         context.unregisterReceiver(foundDeviceReceiver)
