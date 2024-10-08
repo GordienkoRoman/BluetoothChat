@@ -11,7 +11,7 @@ interface MessageDao {
     @Insert(entity = MessageEntity::class,onConflict = OnConflictStrategy.IGNORE)
     suspend fun saveMessage(messageEntity: MessageEntity)
 
-    @Query("SELECT * FROM messages WHERE user_id = :userId")
+    @Query("SELECT * FROM messages WHERE from_user_id = :userId")
     suspend fun getMessages(userId: Int): List<MessageEntity>
 
     @Query("SELECT * FROM messages")

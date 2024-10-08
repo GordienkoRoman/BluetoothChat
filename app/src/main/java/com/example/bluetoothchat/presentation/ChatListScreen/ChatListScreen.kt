@@ -30,7 +30,6 @@ fun ChatListScreen(
     messages: State<List<Message>>,
     onItemClick: (Int) -> Unit
 ){
-    var i:Int = 0
     LazyColumn {
         items(10){
             ChatListItem(onItemClick)

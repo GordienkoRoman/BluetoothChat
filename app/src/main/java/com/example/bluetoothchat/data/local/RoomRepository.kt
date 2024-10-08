@@ -16,7 +16,7 @@ class RoomRepository @Inject constructor(
     val context: Context
 ){
     suspend fun saveMessage(message: Message,userId: Int) {
-        messageDao.saveMessage(MessageEntity(0,userId,message.text,message.time))
+        messageDao.saveMessage(MessageEntity(0,userId,userId,message.text,message.time))
     }
 
     suspend fun getMessages(userId:Int) :List<Message> {

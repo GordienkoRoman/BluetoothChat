@@ -32,6 +32,7 @@ class MainScreenViewModel @Inject constructor(
     val userFlow
         get() = userMutableFlow.asStateFlow()
 
+    fun getName():String = bluetoothChatRepository.getName()
     private val _state = MutableStateFlow(BluetoothUiState())
     val state
         get() = combine(
@@ -114,7 +115,7 @@ class MainScreenViewModel @Inject constructor(
                 }
             }
         }
-            .catch { throwable ->
+            .catch {
                 bluetoothChatRepository.closeConnection()
                 _state.update { it.copy(
                     isConnected = false,

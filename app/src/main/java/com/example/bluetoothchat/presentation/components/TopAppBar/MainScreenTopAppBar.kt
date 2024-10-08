@@ -12,10 +12,10 @@ import androidx.compose.runtime.Composable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreenTopAppBar()
+fun MainScreenTopAppBar(userName:String)
 {
     TopAppBar(
-        title = { Text("Telegram") },
+        title = { Text("Telegram $userName") },
         navigationIcon = { IconButton(onClick = { /*TODO*/ }) {
             Icon(imageVector = Icons.Default.Menu, contentDescription = "Drawer navigation")}},
         actions = {IconButton(onClick = { /*TODO*/ }) {

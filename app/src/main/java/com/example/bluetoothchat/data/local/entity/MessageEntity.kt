@@ -11,9 +11,10 @@ import com.example.bluetoothchat.domain.model.Message
 data class MessageEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "message_id")  val messageId: Int,
-    @ColumnInfo(name = "user_id") val userId:Int,
+    @ColumnInfo(name = "from_user_id") val fromUserId:Int,
+    @ColumnInfo(name = "to_user_id") val toUserId:Int,
     @ColumnInfo("text") val text:String,
     @ColumnInfo("time") val time:String
 ){
-        fun toMessage(): Message =Message(text = text, time = time, isFromLocalUser = userId==1)
+        fun toMessage(): Message =Message(text = text, time = time, isFromLocalUser = true)
 }

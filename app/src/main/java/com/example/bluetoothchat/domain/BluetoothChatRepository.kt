@@ -13,6 +13,7 @@ interface BluetoothChatRepository {
     fun stopDiscovery()
     suspend fun trySendMessage(message: String): Message?
 
+    fun getName():String
     fun startBluetoothServer(): Flow<ConnectionResult>
     fun connectToDevice(device: BluetoothDevice):Flow<ConnectionResult>
     fun closeConnection()

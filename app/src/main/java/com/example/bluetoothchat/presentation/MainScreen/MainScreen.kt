@@ -46,7 +46,7 @@ fun MainScreen(
         mutableStateOf(viewModel.userFlow)
     }
     Scaffold(
-        topBar = { MainScreenTopAppBar() }
+        topBar = { MainScreenTopAppBar(viewModel.getName()) }
     ) { paddingValues ->
         ModalNavigationDrawer(
             drawerContent = {

@@ -101,6 +101,7 @@ class AndroidBluetoothChatRepositoryImpl @Inject constructor(
         )
     }
 
+    override fun getName():String = bluetoothAdapter?.name ?: "Unknown name"
     override fun startDiscovery() {
         if (!hasPermission(Manifest.permission.BLUETOOTH_SCAN)) {
             return
