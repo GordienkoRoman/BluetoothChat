@@ -12,6 +12,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -19,71 +20,104 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.bluetoothchat.domain.model.Message
 import com.example.bluetoothchat.domain.model.User
 import kotlinx.coroutines.flow.StateFlow
-import kotlin.reflect.KFunction2
+import kotlin.reflect.KFunction3
 
 @Composable
 fun ChatScreen(
-    messages:List<Message>,
-    onDisconnect: StateFlow<User> ,
-    onSendMessage: KFunction2<Message, Int, Unit>
+    userId: String,
+    messages: MutableList<Message>,
+    onDisconnect: StateFlow<User>,
+    onSendMessage: KFunction3<Message, Int, Int, Unit>
 ) {
-    val tmpMessage = rememberSaveable {
-        mutableStateOf("")
+    val tmpMessages = rememberSaveable {
+        mutableStateOf(messages)
     }
-    val keyboardController = LocalSoftwareKeyboardController.current
-
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .navigationBarsPadding()
             .background(Color.DarkGray)
     ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(messages) { message ->
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    ChatMessage(
-                        message = Message(message.text,"who", message.isFromLocalUser)
-                        , modifier = Modifier.align(if(message.isFromLocalUser) Alignment.Start else Alignment.End )
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = tmpMessage.value,
-                onValueChange = { tmpMessage.value = it },
-                modifier = Modifier.weight(1f),
-                placeholder = {
-                    Text(text = "Message")
-                }
-            )
-            IconButton(onClick = {
-                onSendMessage(Message(tmpMessage.value,"time",true),1)
-                tmpMessage.value = ""
-                keyboardController?.hide()
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Send,
-                    contentDescription = "Send message"
+        Chat(messages = tmpMessages.value, stateMessages = tmpMessages, userId = userId, onSendMessage = onSendMessage, onDisconnect = onDisconnect)
+
+    }
+}
+
+@Composable
+fun Chat(userId: String,
+         messages: MutableList<Message>,
+         stateMessages: MutableState<MutableList<Message>>,
+         onDisconnect: StateFlow<User>,
+         onSendMessage: KFunction3<Message, Int, Int, Unit>)
+{
+    val tmpMessage = rememberSaveable {
+        mutableStateOf("")
+    }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            ,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        items(stateMessages.value) { message ->
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                ChatMessage(
+                    message = Message(message.text,"who", message.isFromLocalUser)
+                    , modifier = Modifier.align(if(message.isFromLocalUser) Alignment.Start else Alignment.End )
                 )
             }
+        }
+    }
+    ChatTextField(tmpMessage,onSendMessage,stateMessages,userId,keyboardController)
+}
+
+@Composable
+fun ChatTextField(
+    tmpMessage: MutableState<String>,
+    onSendMessage: (Message, Int, Int) -> Unit,
+    stateMessages: MutableState<MutableList<Message>>,
+    userId: String,
+    keyboardController: SoftwareKeyboardController?
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TextField(
+            readOnly = false,
+            minLines = 1,
+            value = tmpMessage.value,
+            onValueChange = { tmpMessage.value = it },
+            modifier = Modifier.weight(1f),
+            placeholder = {
+                Text(text = "Message")
+            }
+        )
+        IconButton(onClick = {
+            val mes = Message(tmpMessage.value,"time",true)
+            onSendMessage(mes,1,userId.toInt())
+            stateMessages.value.add(mes)
+            tmpMessage.value = ""
+            keyboardController?.hide()
+        }) {
+            Icon(
+                imageVector = Icons.Default.Send,
+                contentDescription = "Send message"
+            )
         }
     }
 }

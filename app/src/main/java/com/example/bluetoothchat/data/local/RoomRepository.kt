@@ -15,23 +15,23 @@ class RoomRepository @Inject constructor(
     private val messageDao: MessageDao,
     val context: Context
 ){
-    suspend fun saveMessage(message: Message,userId: Int) {
-        messageDao.saveMessage(MessageEntity(0,userId,userId,message.text,message.time))
+    suspend fun saveMessage(message: Message,userIdFrom: Int,userIdTo:Int) {
+        messageDao.saveMessage(MessageEntity(0,userIdFrom,userIdTo,message.text,message.time))
     }
 
-    suspend fun getMessages(userId:Int) :List<Message> {
+    suspend fun getMessages(userId:Int) : MutableList<Message> {
         return messageDao.getMessages(userId).map {
             it.toMessage()
-        }
+        }.toMutableList()
     }
 
     suspend fun saveUser(id:Int)
     {
         usersDao.upsertUser(UsersEntity(id,"tt","tt"))
     }
-    suspend fun getUsers():List<User>{
+    suspend fun getUsers():MutableList<User>{
         return usersDao.getUsers().map {
             it.toUser()
-        }
+        }.toMutableList()
     }
 }

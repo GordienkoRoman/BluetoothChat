@@ -8,7 +8,7 @@ import com.example.bluetoothchat.domain.BluetoothDeviceDomain
 import com.example.bluetoothchat.domain.ConnectionResult
 import com.example.bluetoothchat.domain.model.Message
 import com.example.bluetoothchat.domain.model.User
-import com.example.bluetoothchat.presentation.BluetoothUiState
+import com.example.bluetoothchat.domain.BluetoothUiState
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -63,7 +63,7 @@ class MainScreenViewModel @Inject constructor(
             .connectToDevice(device)
             .listen()
     }
-    fun sendMessage(message: Message,userId:Int) {
+    fun sendMessage(message: Message,userIdFrom: Int,userIdTo:Int) {
         viewModelScope.launch {
             val bluetoothMessage = bluetoothChatRepository.trySendMessage(message.text)
             if(bluetoothMessage != null) {
@@ -71,11 +71,15 @@ class MainScreenViewModel @Inject constructor(
                     messages = it.messages + bluetoothMessage
                 ) }
             }
-            roomRepository.saveMessage(message,userId)
+            roomRepository.saveMessage(message,userIdFrom,userIdTo)
         }
     }
 
-
+    fun saveUser(id:Int){
+        viewModelScope.launch {
+            roomRepository.saveUser(id)
+        }
+    }
     fun disconnectFromDevice() {
         deviceConnectionJob?.cancel()
         bluetoothChatRepository.closeConnection()

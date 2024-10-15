@@ -15,7 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.bluetoothchat.domain.BluetoothDevice
-import com.example.bluetoothchat.presentation.BluetoothUiState
+import com.example.bluetoothchat.domain.BluetoothUiState
 
 
 @Composable

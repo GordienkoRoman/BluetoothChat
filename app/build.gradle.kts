@@ -72,6 +72,7 @@ dependencies {
     kapt(libs.room.compiler)
     implementation(libs.room.ktx)
    // ksp("androidx.room:room-compiler:2.6.0")
+    implementation(libs.datastore.preferences)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

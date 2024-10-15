@@ -9,7 +9,7 @@ import com.example.bluetoothchat.data.local.entity.UsersEntity
 
 @Database(
     entities = [UsersEntity::class,MessageEntity::class],
-    version = 3
+    version = 1
 )
 abstract class AppDataBase : RoomDatabase() {
     abstract val usersDao: UsersDao

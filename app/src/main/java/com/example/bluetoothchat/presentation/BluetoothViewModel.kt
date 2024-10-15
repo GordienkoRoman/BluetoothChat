@@ -14,10 +14,10 @@ class BluetoothViewModel @Inject constructor(
     private val roomRepository: RoomRepository
 ) : ViewModel() {
 
-    private val _messagesList = MutableStateFlow(listOf(Message("", "", true)))
+    private val _messagesList = MutableStateFlow(mutableMapOf<Int,MutableList<Message>>())
     val messagesList
         get() = _messagesList.asStateFlow()
-    private val _usersList = MutableStateFlow(listOf(User(0, "", "")))
+    private val _usersList = MutableStateFlow(mutableListOf(User(0, "", "")))
     val usersList
         get() = _usersList.asStateFlow()
     private val loadingMutableStateFlow = MutableStateFlow(true)
@@ -30,22 +30,22 @@ class BluetoothViewModel @Inject constructor(
         }
     }
 
-//    fun getUsers(): List<User> {
-//        viewModelScope.launch {
-//            loadingMutableStateFlow.value = true
-//            runCatching {
-//                roomRepository.getUsers()
-//            }.onSuccess {
-//                _usersList.value = it
-//                it.forEach { user: User ->
-//                    roomRepository.getMessages(user.id)
-//                }
-//                loadingMutableStateFlow.value = false
-//            }.onFailure {
-//                loadingMutableStateFlow.value = false
-//            }
-//        }
-//    }
+    fun getUsers() {
+        viewModelScope.launch {
+            loadingMutableStateFlow.value = true
+            runCatching {
+                roomRepository.getUsers()
+            }.onSuccess {
+                _usersList.value = it
+                it.forEach { user: User ->
+                    getMessages(user.id)
+                }
+                loadingMutableStateFlow.value = false
+            }.onFailure {
+                loadingMutableStateFlow.value = false
+            }
+        }
+    }
 
     fun getMessages(userId: Int) {
         viewModelScope.launch {
@@ -53,7 +53,7 @@ class BluetoothViewModel @Inject constructor(
             runCatching {
                 roomRepository.getMessages(userId)
             }.onSuccess {
-                _messagesList.value = it
+                _messagesList.value[userId] = it
                 loadingMutableStateFlow.value = false
             }.onFailure {
                 loadingMutableStateFlow.value = false

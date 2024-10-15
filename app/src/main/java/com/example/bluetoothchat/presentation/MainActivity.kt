@@ -83,7 +83,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             BluetoothChatTheme {
                LaunchedEffect(key1 = true) {
-                   viewModel.getMessages(1)
+                   viewModel.getUsers()
                 }
                 val messages =viewModel.messagesList.collectAsState()
 //                LaunchedEffect(key1 = state.isConnected) {

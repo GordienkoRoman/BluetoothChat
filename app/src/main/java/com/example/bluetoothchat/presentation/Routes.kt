@@ -16,7 +16,7 @@ sealed class Routes(val route: String) {
     companion object {
         const val KEY_AUTH_USER = "auth_user"
         const val KEY_FEED_ITEM_INDEX = "feed_item_index"
-        const val KEY_FEED_SEARCH_INDEX = "feed_search_index"
+        const val KEY_CHAT_SCREEN = "feed_search_index"
     }
 
     fun withArgs(vararg args: String): String {

@@ -1,6 +1,5 @@
-package com.example.bluetoothchat.presentation
+package com.example.bluetoothchat.domain
 
-import com.example.bluetoothchat.domain.BluetoothDevice
 import com.example.bluetoothchat.domain.model.Message
 
 data class BluetoothUiState(

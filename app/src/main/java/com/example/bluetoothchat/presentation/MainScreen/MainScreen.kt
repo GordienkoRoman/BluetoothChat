@@ -1,6 +1,11 @@
 package com.example.bluetoothchat.presentation.MainScreen
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
@@ -22,6 +27,7 @@ import com.example.bluetoothchat.domain.model.Message
 import com.example.bluetoothchat.presentation.ChatListScreen.ChatListScreen
 import com.example.bluetoothchat.presentation.ChatScreen.ChatScreen
 import com.example.bluetoothchat.presentation.Routes
+import com.example.bluetoothchat.presentation.Routes.Companion.KEY_CHAT_SCREEN
 import com.example.bluetoothchat.presentation.components.NavigationDrawer
 import com.example.bluetoothchat.presentation.components.ScaffoldViewState
 import com.example.bluetoothchat.presentation.components.TopAppBar.MainScreenTopAppBar
@@ -30,7 +36,7 @@ import com.example.bluetoothchat.presentation.components.TopAppBar.MainScreenTop
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    messages: State<List<Message>>,
+    messages: State<MutableMap<Int, MutableList<Message>>>,
     viewModelFactory: ViewModelFactory
 ) {
     val viewModel: MainScreenViewModel = viewModel(factory = viewModelFactory)
@@ -42,10 +48,15 @@ fun MainScreen(
         mutableStateOf(ScaffoldViewState())
     }
 
-    val user = remember {
+    val currentUser = remember {
         mutableStateOf(viewModel.userFlow)
     }
+//    for(i in 1..10){
+//       // viewModel.sendMessage(Message(i.toString(),"time",true),i)
+//        viewModel.saveUser(i)
+//    }
     Scaffold(
+        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Bottom),
         topBar = { MainScreenTopAppBar(viewModel.getName()) }
     ) { paddingValues ->
         ModalNavigationDrawer(
@@ -61,11 +72,13 @@ fun MainScreen(
                 ) {
                     composable(route = Routes.ChatList.route){
                         ChatListScreen(messages, onItemClick = {
-                            navController.navigate(Routes.Chat.route)
+                            navController.navigate(Routes.Chat.route+"/"+it)
                         })
                     }
-                    composable(route = Routes.Chat.route){
-                        ChatScreen(messages.value,user.value, onSendMessage = viewModel::sendMessage)
+                    composable(route = Routes.Chat.withArgs("{$KEY_CHAT_SCREEN}")){
+                        val userIdTo = it.arguments?.getString(KEY_CHAT_SCREEN) ?: ""
+                        val list = messages.value[userIdTo.toInt()]!!
+                        ChatScreen(userIdTo,messages.value[userIdTo.toInt()]!!,currentUser.value, onSendMessage = viewModel::sendMessage)
                     }
                 }
 
