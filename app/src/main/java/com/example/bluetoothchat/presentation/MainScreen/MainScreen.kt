@@ -56,7 +56,7 @@ fun MainScreen(
 //        viewModel.saveUser(i)
 //    }
     Scaffold(
-        contentWindowInsets = WindowInsets.systemBars.only(WindowInsetsSides.Bottom),
+        contentWindowInsets = WindowInsets.safeDrawing,
         topBar = { MainScreenTopAppBar(viewModel.getName()) }
     ) { paddingValues ->
         ModalNavigationDrawer(
@@ -78,7 +78,7 @@ fun MainScreen(
                     composable(route = Routes.Chat.withArgs("{$KEY_CHAT_SCREEN}")){
                         val userIdTo = it.arguments?.getString(KEY_CHAT_SCREEN) ?: ""
                         val list = messages.value[userIdTo.toInt()]!!
-                        ChatScreen(userIdTo,messages.value[userIdTo.toInt()]!!,currentUser.value, onSendMessage = viewModel::sendMessage)
+                        ChatScreen(userIdTo,messages.value[userIdTo.toInt()]!!,currentUser.value, onSendMessage = viewModel::sendMessage, onDeleteMessage = viewModel::deleteMessage)
                     }
                 }
 

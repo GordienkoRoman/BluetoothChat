@@ -16,4 +16,7 @@ interface MessageDao {
 
     @Query("SELECT * FROM messages")
     suspend fun getAllMessages(): List<MessageEntity>
+
+    @Query("DELETE FROM messages where message_id = :messageId")
+    suspend fun deleteMessage(messageId:Int)
 }

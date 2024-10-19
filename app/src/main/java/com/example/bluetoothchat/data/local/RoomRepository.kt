@@ -34,4 +34,7 @@ class RoomRepository @Inject constructor(
             it.toUser()
         }.toMutableList()
     }
+    suspend fun deleteMessage(messageId:Int){
+        messageDao.deleteMessage(messageId)
+    }
 }

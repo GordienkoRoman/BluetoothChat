@@ -2,6 +2,7 @@ package com.example.bluetoothchat.presentation.MainScreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.bluetoothchat.data.local.RoomRepository
 import com.example.bluetoothchat.domain.BluetoothChatRepository
 import com.example.bluetoothchat.domain.BluetoothDeviceDomain
@@ -72,6 +73,13 @@ class MainScreenViewModel @Inject constructor(
                 ) }
             }
             roomRepository.saveMessage(message,userIdFrom,userIdTo)
+        }
+    }
+
+    fun deleteMessage(messageId:Int)
+    {
+        viewModelScope.launch {
+            roomRepository.deleteMessage(messageId)
         }
     }
 

@@ -5,7 +5,8 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class Message(
-    val text: String,
-    val time: String,
-    val isFromLocalUser: Boolean
+    val text: String="",
+    val time: String="",
+    val isFromLocalUser: Boolean=true,
+    val id:Int =0
 ):Parcelable

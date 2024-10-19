@@ -16,5 +16,5 @@ data class MessageEntity(
     @ColumnInfo("text") val text:String,
     @ColumnInfo("time") val time:String
 ){
-        fun toMessage(): Message =Message(text = text, time = time, isFromLocalUser = true)
+        fun toMessage(): Message =Message(text = text, time = time, isFromLocalUser = true,id = messageId)
 }
